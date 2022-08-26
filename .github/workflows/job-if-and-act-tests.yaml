@@ -1,4 +1,12 @@
 ---
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
 jobs:
   actnofork:
     name: "Test job-level IF for deciding if flow is running on act (locally) or on the non-fork repo"
