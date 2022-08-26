@@ -1,0 +1,32 @@
+---
+jobs:
+  actnofork:
+    name: "Test job-level IF for deciding if flow is running on act (locally) or on the non-fork repo"
+    ###
+    # Some jobs you want to run only on pushing to the upstream repo, but you also want to test
+    # it locally using act.
+    # It turns out that you cannot access the `env` context from job.if [1] so using `${{ env.ACT }}'
+    # throws an error like:
+    #   Invalid workflow file
+    #   The workflow is not valid. .github/workflows/docs.yaml (Line: 55, Col: 9): 
+    #   Unrecognized named-value: 'env'. Located at position 1 within expression: env.ACT
+    #
+    # Nobody wants to change this [2][3]
+    #
+    # [1]: https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+    # [2]: https://github.com/nektos/act/issues/720
+    # [3]: https://github.com/actions/runner/issues/1189
+    
+    # This would fail:
+    # if: github.repository_owner == 'agittins' || ${{ env.ACT }}
+    
+    # run on upstream repo or on local fork (via act), but not on github forks
+    if: github.repository_owner == 'agittins' || github.repository_owner == ''  # run on upstream repo or local act, but not on forks
+    
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello, world. This repo belongs to [${{ github.repository_owner }}]."
+      - if: ${{ env.ACT }}
+        run: echo "We can still use the ACT var inside steps, such as for this local job."
+      - if: ${{ !env.ACT }}
+        run: echo "We can do steps only when not in act, too - like now."
